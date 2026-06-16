@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quiz Generator</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>上传文档生成测验</h1>
+      <p>支持 .pptx .docx .pdf（如有 .doc 请先转为 .docx）</p>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul class="flashes">
+          {% for msg in messages %}
+            <li>{{ msg }}</li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".pdf,.pptx,.docx,.doc" required>
+        <button type="submit">上传并生成测验</button>
+      </form>
+
+      <hr>
+      <p>样式来自你的原始页面 will be used to style generated quiz.</p>
+    </div>
+  </body>
+</html>

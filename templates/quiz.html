@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quiz - {{ title }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <h1>自动生成测验：{{ title }}</h1>
+      <form id="quizForm">
+        {% for q in questions %}
+          <div class="card">
+            <div class="qnum">第 {{ loop.index }} 题</div>
+            <div class="question">{{ q.question }}</div>
+            <div class="options">
+              {% for opt in q.options %}
+                <label class="opt">
+                  <input type="radio" name="q{{ loop.parent.index0 }}" value="{{ loop.index0 }}">
+                  <span>{{ ['A','B','C','D'][loop.index0] }}. {{ opt }}</span>
+                </label>
+              {% endfor %}
+            </div>
+            <div class="explain" data-answer="{{ q.answer }}" style="display:none">答案：{{ ['A','B','C','D'][q.answer] }} — {{ q.explanation }}</div>
+          </div>
+        {% endfor %}
+        <button type="button" id="revealBtn">提交并揭晓答案</button>
+      </form>
+    </div>
+
+    <script>
+      document.getElementById('revealBtn').addEventListener('click', function(){
+        const cards = document.querySelectorAll('.card');
+        let score = 0;
+        cards.forEach((card, idx) => {
+          const chosen = card.querySelector('input[type=radio]:checked');
+          const answer = parseInt(card.querySelector('.explain').dataset.answer, 10);
+          if (chosen && parseInt(chosen.value,10) === answer) {
+            card.classList.add('correct'); score++;
+          } else {
+            card.classList.add('wrong');
+          }
+          card.querySelector('.explain').style.display = 'block';
+        });
+        alert('得分：' + score + ' / ' + cards.length);
+      });
+    </script>
+  </body>
+</html>
