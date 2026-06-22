@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学大闯关 - 滑轮和滑轮组</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
+
+        body {
+            font-family: 'PingFang SC', "Microsoft YaHei", sans-serif;
+            background: #fff7ed; /* 浅橙色背景 */
+            background-image: 
+                radial-gradient(#ffedd5 1px, transparent 1px),
+                radial-gradient(#ffedd5 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            color: #1e293b;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .fun-font { font-family: 'ZCOOL KuaiLe', cursive, sans-serif; }
+
+        /* 气泡悬浮 */
+        .float-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 40px;
+            box-shadow: 0 20px 0 #fed7aa;
+            border: 4px solid #ea580c;
+        }
+
+        /* 吉祥物 */
+        .mascot-box {
+            position: relative;
+            transition: all 0.4s;
+        }
+
+        /* 动画 */
+        .anim-idle { animation: idle 2s ease-in-out infinite; }
+        @keyframes idle {
+            0%, 100% { transform: translateY(0) rotate(-2deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        .anim-happy { animation: happy 0.5s ease-in-out infinite; }
+        @keyframes happy {
+            0%, 100% { transform: translateY(0) scale(1) rotate(0); }
+            50% { transform: translateY(-25px) scale(1.1) rotate(5deg); }
+        }
+
+        .anim-sad { animation: sad 0.4s ease-in-out infinite; }
+        @keyframes sad {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px) rotate(-3deg); }
+            75% { transform: translateX(5px) rotate(3deg); }
+        }
+
+        /* 小组卡片 */
+        .group-card {
+            background: white;
+            border-radius: 30px;
+            border-bottom: 8px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+        .group-card.ready { border-color: #fbbf24; transform: translateY(-5px); }
+        .group-card.correct { border-color: #fb923c; background: #fff7ed; }
+        .group-card.wrong { border-color: #f87171; background: #fef2f2; filter: grayscale(0.5); }
+
+        /* 选项按钮 */
+        .opt-btn {
+            background: #f1f5f9;
+            border-radius: 20px;
+            border-bottom: 4px solid #cbd5e1;
+            transition: all 0.1s;
+        }
+        .opt-btn:active:not(:disabled) { transform: translateY(2px); border-bottom-width: 2px; }
+        .opt-btn.selected { background: #ea580c; color: white; border-color: #c2410c; }
+
+        /* 覆盖层 */
+        .reveal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="h-full flex flex-col p-6">
+        
+        <!-- 设置引导页 -->
+        <div v-if="view === 'setup'" class="flex-grow flex flex-col items-center justify-center">
+            <div class="relative mb-12">
+                <div class="absolute -top-12 -left-12 text-6xl rotate-[-15deg]">⚙️</div>
+                <div class="absolute -bottom-8 -right-8 text-6xl rotate-[15deg]">🏗️</div>
+                <h1 class="text-8xl font-black fun-font text-orange-600 drop-shadow-xl">滑轮派对 AI</h1>
+            </div>
+
+            <div class="bg-white p-12 rounded-[3rem] shadow-[0_20px_0_#fed7aa] border-4 border-orange-200 max-w-4xl w-full">
+                <div class="flex flex-col items-center space-y-10">
+                    <div class="flex gap-4">
+                        <button v-for="n in [2,3,4,5,6]" @click="groupCount = n" 
+                                :class="['w-16 h-16 rounded-2xl font-black text-2xl transition-all border-4', 
+                                         groupCount === n ? 'bg-orange-500 text-white border-orange-300 scale-110' : 'bg-orange-5 border-orange-100 text-orange-300']">
+                            {{ n }}
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 w-full">
+                        <div v-for="i in groupCount" :key="i" class="flex items-center gap-4 bg-orange-50/50 p-4 rounded-3xl border-2 border-dashed border-orange-200">
+                            <div @click="cycleMascot(i-1)" class="cursor-pointer hover:rotate-12 transition-transform">
+                                <mascot-icon :type="groupMascots[i-1]" state="idle" size="70"></mascot-icon>
+                            </div>
+                            <input v-model="groupNames[i-1]" class="bg-transparent border-b-2 border-orange-200 p-2 text-xl font-bold outline-none focus:border-orange-500 flex-grow" placeholder="写下队名...">
+                        </div>
+                    </div>
+
+                    <button @click="initGame" class="px-20 py-6 bg-orange-500 hover:bg-orange-600 text-white rounded-full text-4xl font-black shadow-[0_10px_0_#c2410c] hover:translate-y-1 hover:shadow-[0_6px_0_#c2410c] transition-all">
+                        开始冒险 GO!
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 游戏主页 -->
+        <template v-if="view === 'playing'">
+            <div class="flex-[6] flex gap-8 mb-6">
+                <!-- 题目板 -->
+                <div class="flex-grow float-panel p-10 flex flex-col justify-center relative overflow-hidden">
+                    <div class="absolute top-4 left-8 text-orange-500 font-black text-xl italic">
+                        STAGE {{ qIndex + 1 }}
+                    </div>
+                    <!-- 装饰背景 -->
+                    <div class="absolute -right-10 -bottom-10 opacity-10 text-[200px]">⚙️</div>
+
+                    <h2 class="text-4xl font-black text-slate-700 leading-tight mb-8 z-10">
+                        {{ currentQ.question }}
+                    </h2>
+                    
+                    <div class="grid grid-cols-2 gap-4 z-10">
+                        <div v-for="(opt, idx) in currentQ.options" :key="idx" 
+                             :class="['p-5 rounded-2xl border-4 text-xl font-bold transition-all',
+                                      isRevealed && idx === currentQ.answer ? 'bg-orange-100 border-orange-500 text-orange-700' : 
+                                      isRevealed ? 'opacity-20 border-transparent' : 'bg-slate-50 border-slate-100']">
+                             <span class="text-orange-600 mr-3">{{ ['A','B','C','D'][idx] }}.</span> {{ opt }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI 助手栏 -->
+                <div class="w-1/4 flex flex-col items-center justify-center gap-4">
+                    <div class="bg-white p-6 rounded-3xl shadow-lg border-2 border-orange-100 relative">
+                        <p class="font-bold text-slate-600">{{ aiMessage }}</p>
+                        <div class="absolute -bottom-3 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[12px] border-t-white"></div>
+                    </div>
+                    <div :class="isSpeaking ? 'scale-110' : ''" class="transition-transform duration-300">
+                        <mascot-icon type="ai" :state="isSpeaking ? 'happy' : 'idle'" size="160"></mascot-icon>
+                    </div>
+                    <button @click="speakCurrentQuestion" class="mt-4 px-4 py-2 bg-white rounded-full text-sm font-bold text-orange-500 shadow-sm border border-orange-100 hover:bg-orange-50">🔊 听听题目</button>
+                </div>
+            </div>
+
+            <!-- 小组显示 -->
+            <div class="flex-[4] grid gap-4" :style="`grid-template-columns: repeat(${groupCount}, 1fr)`">
+                <div v-for="(g, idx) in groups" :key="idx" 
+                     :class="['group-card p-4 flex flex-col justify-between relative', g.selection !== null ? 'ready' : '']">
+                    
+                    <div class="flex justify-between items-start">
+                        <mascot-icon :type="g.mascot" state="idle" size="70"></mascot-icon>
+                        <div class="text-right">
+                            <div class="text-[10px] text-slate-400 font-black">SCORE</div>
+                            <div class="text-3xl font-black text-orange-600">{{ g.score }}</div>
+                        </div>
+                    </div>
+
+                    <div class="font-black text-lg text-slate-600 truncate mb-3">{{ g.name }}</div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <button v-for="b in [0,1,2,3]" :key="b"
+                                @click="handleAnswer(idx, b)"
+                                :disabled="g.answered || isRevealed"
+                                :class="['opt-btn h-12 font-black text-xl', g.selection === b ? 'selected' : '']">
+                            {{ ['A','B','C','D'][b] }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 揭晓时刻覆盖层 -->
+            <transition name="fade">
+                <div v-if="isRevealed" class="reveal-overlay">
+                    <div class="bg-white p-12 rounded-[4rem] shadow-2xl border-8 border-orange-200 max-w-5xl w-full mx-4 overflow-hidden relative">
+                        <!-- 背景彩带特效 -->
+                        <div v-if="hasWinners" class="absolute inset-0 pointer-events-none overflow-hidden opacity-30">
+                            <div v-for="n in 20" :key="n" class="absolute animate-bounce" :style="`left: ${n*5}%; top: ${Math.random()*100}%; color: hsl(${Math.random()*360}, 70%, 60%)`">✨</div>
+                        </div>
+
+                        <div class="flex flex-col items-center">
+                            <h2 class="text-5xl font-black text-slate-700 mb-10 fun-font">
+                                答案揭晓：<span class="text-orange-600">{{ ['A','B','C','D'][currentQ.answer] }}</span>
+                            </h2>
+                            
+                            <!-- 表情 -->
+                            <div class="flex flex-wrap justify-center gap-10 mb-12">
+                                <div v-for="(g, idx) in groups" :key="idx" class="flex flex-col items-center">
+                                    <mascot-icon 
+                                        :type="g.mascot" 
+                                        :state="g.selection === currentQ.answer ? 'happy' : 'sad'" 
+                                        size="120">
+                                    </mascot-icon>
+                                    <div :class="['mt-4 px-4 py-1 rounded-full font-black text-xl', g.selection === currentQ.answer ? 'bg-orange-100 text-orange-600' : 'bg-red-100 text-red-600']">
+                                        {{ g.selection === currentQ.answer ? '+'+g.lastChange : g.lastChange }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-50 p-8 rounded-3xl border-2 border-slate-100 w-full mb-8">
+                                <p class="text-2xl font-bold text-slate-600 text-center">{{ currentQ.explanation }}</p>
+                            </div>
+
+                            <button @click="next" class="px-16 py-6 bg-orange-500 text-white rounded-full text-3xl font-black shadow-[0_10px_0_#c2410c] hover:translate-y-1 transition-all">
+                                下一关 ➔
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+
+            <!-- 强制等待揭晓按钮 -->
+            <div v-if="allAnswered && !isRevealed" class="fixed bottom-10 left-1/2 -translate-x-1/2">
+                <button @click="reveal" class="px-20 py-8 bg-yellow-400 text-slate-900 rounded-full text-5xl font-black shadow-[0_15px_0_#ca8a04] animate-bounce">
+                    大家选好了吗？点我揭晓!
+                </button>
+            </div>
+        </template>
+
+        <!-- 结算页 -->
+        <div v-if="view === 'finished'" class="flex-grow flex items-center justify-center">
+            <div class="bg-white p-20 rounded-[5rem] shadow-2xl text-center border-8 border-yellow-200">
+                <div class="text-9xl mb-10">🏆</div>
+                <div class="flex flex-col items-center gap-6">
+                    <mascot-icon :type="sortedGroups[0].mascot" state="happy" size="200"></mascot-icon>
+                    <h1 class="text-7xl font-black text-orange-600 mt-4">{{ sortedGroups[0].name }} 夺冠！</h1>
+                </div>
+                <button @click="reset" class="mt-12 text-slate-400 underline font-bold">返回起点</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp, ref, computed, nextTick } = Vue;
+
+        // --- 可爱版吉祥物组件 ---
+        const MascotIcon = {
+            props: ['type', 'state', 'size'],
+            template: `
+                <div class="mascot-box" :style="{ width: size+'px', height: size+'px' }" 
+                     :class="state === 'happy' ? 'anim-happy' : (state === 'sad' ? 'anim-sad' : 'anim-idle')">
+                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%">
+                        <!-- 身体 -->
+                        <g v-if="type === 'ai'">
+                            <rect x="15" y="25" width="70" height="55" rx="25" fill="#ea580c" />
+                            <circle cx="35" cy="15" r="5" fill="#ea580c" />
+                            <rect x="25" y="35" width="50" height="30" rx="15" fill="#fff" />
+                        </g>
+                        <g v-else-if="type === 'sun'">
+                            <circle cx="50" cy="50" r="40" fill="#fbbf24" />
+                            <path d="M50 5 L50 15 M50 85 L50 95 M5 50 L15 50 M85 50 L95 50" stroke="#fbbf24" stroke-width="5" stroke-linecap="round" />
+                        </g>
+                        <g v-else-if="type === 'jelly'">
+                            <path d="M20 80 Q50 10 80 80 A15 15 0 0 1 20 80" fill="#f97316" />
+                            <circle cx="35" cy="85" r="8" fill="#f97316" />
+                            <circle cx="50" cy="85" r="8" fill="#f97316" />
+                            <circle cx="65" cy="85" r="8" fill="#f97316" />
+                        </g>
+                        <g v-else-if="type === 'bolt'">
+                            <path d="M30 20 L70 20 L60 50 L80 50 L40 90 L50 60 L20 60 Z" fill="#facc15" stroke="#f59e0b" stroke-width="2" />
+                        </g>
+                        <g v-else-if="type === 'rabbit'">
+                            <ellipse cx="35" cy="25" rx="8" ry="25" fill="#fbcfe8" />
+                            <ellipse cx="65" cy="25" rx="8" ry="25" fill="#fbcfe8" />
+                            <circle cx="50" cy="65" r="35" fill="#fbcfe8" />
+                        </g>
+                        <g v-else> <!-- Pudding -->
+                            <path d="M25 40 Q50 25 75 40 L80 80 Q50 90 20 80 Z" fill="#fdba74" />
+                            <path d="M25 40 Q50 35 75 40" fill="#92400e" stroke="#92400e" stroke-width="5" stroke-linecap="round" />
+                        </g>
+
+                        <!-- 表情 -->
+                        <g v-if="state === 'happy'">
+                            <path d="M30 45 Q40 35 50 45" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" />
+                            <path d="M50 45 Q60 35 70 45" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round" />
+                            <path d="M35 65 Q50 85 65 65 Z" fill="#f43f5e" />
+                            <circle cx="25" cy="60" r="5" fill="#fda4af" opacity="0.6" />
+                            <circle cx="75" cy="60" r="5" fill="#fda4af" opacity="0.6" />
+                        </g>
+                        <g v-else-if="state === 'sad'">
+                            <path d="M35 50 L45 45" stroke="#000" stroke-width="4" stroke-linecap="round" />
+                            <path d="M55 45 L65 50" stroke="#000" stroke-width="4" stroke-linecap="round" />
+                            <path d="M40 75 Q50 65 60 75" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" />
+                            <path d="M30 55 Q20 70 30 85" fill="none" stroke="#60a5fa" stroke-width="3">
+                                <animate attributeName="stroke-dashoffset" from="20" to="0" dur="0.2s" repeatCount="indefinite" />
+                            </path>
+                            <path d="M70 55 Q80 70 70 85" fill="none" stroke="#60a5fa" stroke-width="3">
+                                <animate attributeName="stroke-dashoffset" from="20" to="0" dur="0.2s" repeatCount="indefinite" />
+                            </path>
+                        </g>
+                        <g v-else>
+                            <circle cx="35" cy="48" r="4" fill="#000" />
+                            <circle cx="65" cy="48" r="4" fill="#000" />
+                            <path d="M45 65 Q50 70 55 65" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" />
+                        </g>
+                    </svg>
+                </div>
+            `
+        };
+
+        createApp({
+            components: { MascotIcon },
+            setup() {
+                const view = ref('setup');
+                const qIndex = ref(0);
+                const groupCount = ref(4);
+                const isRevealed = ref(false);
+                const isSpeaking = ref(false);
+                const correctQueue = ref([]);
+
+                const mascotTypes = ['sun', 'jelly', 'bolt', 'rabbit', 'pudding', 'ai'];
+                const groupMascots = ref(['sun', 'jelly', 'bolt', 'rabbit', 'pudding', 'ai']);
+                const groupNames = ref(['定滑轮小队', '动滑轮小队', '强力滑轮组', '起重吊车队', '杠杆平衡队', '小橘战队']);
+                const groups = ref([]);
+
+                const questions = [
+                    { question: "工作时，轴固定不动、不随重物一起移动的滑轮叫作？", options: ["定滑轮", "动滑轮", "滑轮组", "杠杆"], answer: 0, explanation: "轴固定不动的滑轮叫定滑轮，随重物一起移动的叫动滑轮！" },
+                    { question: "关于定滑轮的特点，下列说法正确的是？", options: ["能省一半的力，且改变力的方向", "不省力，但能改变施力的方向", "费力，但省位移", "既省力又省位移"], answer: 1, explanation: "使用定滑轮时既不省力也不费力，但它可以改变施力的方向，省去爬高桅杆拉重物的麻烦！" },
+                    { question: "忽略滑轮重力和摩擦时，使用动滑轮提升重物可以？", options: ["省一半的力，且能改变施力的方向", "改变施力的方向，但不省力", "省一半的力，但不能改变施力的方向", "费力但省距离"], answer: 2, explanation: "动滑轮可以省一半的力（F = 1/2 W），但无法改变施力方向（它的拉力方向和重物移动方向一致）！" },
+                    { question: "从杠杆原理来看，定滑轮实质上是一个？", options: ["省力杠杆", "费力杠杆", "等臂杠杆", "省距离杠杆"], answer: 2, explanation: "定滑轮的轴心是支点，动力臂和阻力臂都等于滑轮的半径，所以它是一个等臂杠杆！" },
+                    { question: "从杠杆原理来看，动滑轮实质上是一个？", options: ["动力臂为阻力臂长2倍的省力杠杆", "动力臂为阻力臂长1/2的费力杠杆", "等臂杠杆", "费力且费距离的杠杆"], answer: 0, explanation: "动滑轮支点在绳子固定端与滑轮边缘的切点，动力臂是直径，阻力臂是半径。动力臂是阻力臂的2倍，所以是省力杠杆！" },
+                    { question: "在滑轮组中，忽略滑轮重力、绳重及摩擦，提起重物W所需的拉力F与承重绳子段数n的关系是？", options: ["F = W * n", "F = W / n", "F = W + n", "F = W / (n + 1)"], answer: 1, explanation: "滑轮组中，由几股绳子吊着重物和动滑轮，提起重物所需的拉力就是总重力的几分之一，即 F = W / n！" },
+                    { question: "若一个滑轮组有3段绳子连接动滑轮（n=3），提起重物W=100N，动滑轮重L=20N，不计绳重和摩擦，所需的拉力F是？", options: ["40N", "33.3N", "120N", "60N"], answer: 0, explanation: "当需要计入动滑轮重L时，拉力 F = (W + L) / n = (100N + 20N) / 3 = 40N！" },
+                    { question: "如图所示，用定滑轮提升重物A，当沿不同方向施加拉力 F1、F2、F3 时，这三个力的大小关系是？", options: ["F1 最大", "F2 最大", "F3 最大", "三个力一样大"], answer: 3, explanation: "定滑轮是个等臂杠杆，向任何方向拉绳子时，动力臂都等于滑轮的半径，因此三个方向的拉力大小都相等！" },
+                    { question: "忽略滑轮重和摩擦，用定滑轮和动滑轮分别提升重为250N的袋子，所需的拉力分别至少是？", options: ["250N，125N", "125N，250N", "250N，250N", "125N，125N"], answer: 0, explanation: "定滑轮不省力，拉力 F = 250N；动滑轮省一半力，拉力 F = 250N / 2 = 125N！" },
+                    { question: "使用动滑轮匀速提升重物时，若重物上升的速度是 1 m/s，则绳子自由端（动力作用点）移动的速度是？", options: ["1 m/s", "2 m/s", "0.5 m/s", "4 m/s"], answer: 1, explanation: "动滑轮省力但费位移。拉力省了一半，绳子移动距离则是重物上升距离的2倍，因此绳端移动的速度也是重物速度的2倍（2 m/s）！" }
+                ];
+
+                const currentQ = computed(() => questions[qIndex.value]);
+                const hasWinners = computed(() => groups.value.some(g => g.selection === currentQ.value.answer));
+                
+                const aiMessage = computed(() => {
+                    if (isRevealed.value) return "原来滑轮就是变形的杠杆呀！";
+                    if (allAnswered.value) return "大家拉好绳子了吗？揭晓时刻！";
+                    return "我是你的滑轮小帮手，省力费距离，算一算拉力吧！";
+                });
+
+                const cycleMascot = (idx) => {
+                    const curr = groupMascots.value[idx];
+                    groupMascots.value[idx] = mascotTypes[(mascotTypes.indexOf(curr) + 1) % mascotTypes.length];
+                    playSfx(600, 0.05);
+                };
+
+                const initGame = () => {
+                    groups.value = groupNames.value.slice(0, groupCount.value).map((name, i) => ({
+                        name: name || `滑轮小队${i+1}`,
+                        mascot: groupMascots.value[i],
+                        score: 0,
+                        answered: false,
+                        selection: null,
+                        lastChange: 0
+                    }));
+                    view.value = 'playing';
+                    nextTick(() => speakCurrentQuestion());
+                };
+
+                const handleAnswer = (idx, btn) => {
+                    const g = groups.value[idx];
+                    g.answered = true;
+                    g.selection = btn;
+                    if (btn === currentQ.value.answer) correctQueue.value.push(idx);
+                    playSfx(800, 0.1);
+                };
+
+                const allAnswered = computed(() => groups.value.every(g => g.answered));
+
+                const reveal = () => {
+                    isRevealed.value = true;
+                    groups.value.forEach((g, i) => {
+                        const isCorrect = g.selection === currentQ.value.answer;
+                        if (isCorrect) {
+                            const r = correctQueue.value.indexOf(i);
+                            g.lastChange = r === 0 ? 30 : (r === 1 ? 25 : 20);
+                            playSfx(1200, 0.3);
+                        } else {
+                            g.lastChange = -10;
+                            playSfx(300, 0.4);
+                        }
+                        g.score += g.lastChange;
+                    });
+                };
+
+                const next = () => {
+                    if (qIndex.value < questions.length - 1) {
+                        qIndex.value++;
+                        isRevealed.value = false;
+                        correctQueue.value = [];
+                        groups.value.forEach(g => { g.answered = false; g.selection = null; });
+                        speakCurrentQuestion();
+                    } else {
+                        view.value = 'finished';
+                    }
+                };
+
+                const speakCurrentQuestion = () => {
+                    isSpeaking.value = true;
+                    const text = `${currentQ.value.question}。A，${currentQ.value.options[0]}。B，${currentQ.value.options[1]}。C，${currentQ.value.options[2]}。D，${currentQ.value.options[3]}`;
+                    const utter = new SpeechSynthesisUtterance(text);
+                    utter.lang = 'zh-CN';
+                    utter.onend = () => isSpeaking.value = false;
+                    window.speechSynthesis.speak(utter);
+                };
+
+                const playSfx = (freq, dur) => {
+                    try {
+                        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o.connect(g); g.connect(ctx.destination);
+                        o.frequency.setValueAtTime(freq, ctx.currentTime);
+                        g.gain.setValueAtTime(0.1, ctx.currentTime);
+                        g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+                        o.start(); o.stop(ctx.currentTime + dur);
+                    } catch(e) {}
+                };
+
+                const sortedGroups = computed(() => [...groups.value].sort((a, b) => b.score - a.score));
+                const reset = () => location.reload();
+
+                return { 
+                    view, qIndex, groupCount, groups, isRevealed, isSpeaking, currentQ, aiMessage, hasWinners,
+                    allAnswered, sortedGroups, groupNames, groupMascots, cycleMascot,
+                    initGame, handleAnswer, reveal, next, reset, speakCurrentQuestion 
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

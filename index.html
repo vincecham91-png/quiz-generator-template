@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学学习平台 - 詹老师</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Top Panel -->
+        <header class="top-panel">
+            <div class="logo">
+                <h1>詹老师科学课堂</h1>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li class="active" data-section="intro">简介</li>
+                    <li data-section="exercise-template">练习生成模版</li>
+                    <li data-section="videos">视频</li>
+                    <li data-section="interactive-exercises">练习互动区</li>
+                    <li data-section="chat-bot">詹老师机器人聊科学</li>
+                </ul>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-wrapper">
+            <!-- Left Panel -->
+            <aside class="left-panel">
+                <div class="panel-section">
+                    <h3>学习阶段</h3>
+                    <ul>
+                        <li class="grade-level active" data-grade="junior">初中</li>
+                        <li class="grade-level" data-grade="senior">高中</li>
+                    </ul>
+                </div>
+                <div class="panel-section chapters-junior">
+                    <h3>初中章节</h3>
+                    <ul>
+                        <li><a href="#">初一上</a></li>
+                        <li><a href="#">初一下</a></li>
+                        <li><a href="#">初二上</a></li>
+                        <li><a href="#">初二下</a></li>
+                        <li><a href="#">初三上</a></li>
+                        <li><a href="#">初三下</a></li>
+                    </ul>
+                </div>
+                <div class="panel-section chapters-senior hidden">
+                    <h3>高中章节</h3>
+                    <ul>
+                        <li><a href="#">高一上</a></li>
+                        <li><a href="#">高一下</a></li>
+                        <li><a href="#">高二上</a></li>
+                        <li><a href="#">高二下</a></li>
+                        <li><a href="#">高三上</a></li>
+                        <li><a href="#">高三下</a></li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Content Area -->
+            <main class="content-area">
+                <section id="intro" class="content-section active">
+                    <h2>简介</h2>
+                    <p>欢迎来到詹老师的科学课堂！在这里，你将探索奇妙的科学世界，掌握基础知识，提升解决问题的能力。</p>
+                    <p>我们提供丰富的学习资源，包括详细的知识点解析、实用的练习生成工具、生动的教学视频以及互动性强的练习区。更有詹老师机器人随时为你解答科学疑问！</p>
+                </section>
+
+                <section id="exercise-template" class="content-section hidden">
+                    <h2>练习生成模版</h2>
+                    <p>在这里，你可以根据自己的需求生成专属练习题。选择章节、难度和题型，定制你的学习计划。</p>
+                    <div class="template-controls">
+                        <!-- Placeholder for exercise generation controls -->
+                        <label for="chapter-select">选择章节:</label>
+                        <select id="chapter-select">
+                            <option value="junior-1a">初一上</option>
+                            <option value="junior-1b">初一下</option>
+                            <!-- Add more options dynamically with JS -->
+                        </select>
+                        <label for="difficulty-select">难度:</label>
+                        <select id="difficulty-select">
+                            <option value="easy">简单</option>
+                            <option value="medium">中等</option>
+                            <option value="hard">困难</option>
+                        </select>
+                        <button>生成练习</button>
+                    </div>
+                    <div class="generated-exercises">
+                        <!-- Generated exercises will appear here -->
+                        <p>生成的练习题将显示在这里...</p>
+                    </div>
+                </section>
+
+                <section id="videos" class="content-section hidden">
+                    <h2>视频</h2>
+                    <p>观看詹老师精心制作的科学教学视频，深入理解复杂概念。</p>
+                    <div class="video-gallery">
+                        <!-- Placeholder for video embeds -->
+                        <div class="video-item">
+                            <h3>视频标题 1</h3>
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <div class="video-item">
+                            <h3>视频标题 2</h3>
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="interactive-exercises" class="content-section hidden">
+                    <h2>练习互动区</h2>
+                    <p>通过互动式练习巩固知识，即时反馈助你快速进步。</p>
+                    <div class="interactive-area">
+                        <!-- Placeholder for interactive exercise widgets -->
+                        <p>互动练习区域即将上线...</p>
+                    </div>
+                </section>
+
+                <section id="chat-bot" class="content-section hidden">
+                    <h2>詹老师机器人聊科学</h2>
+                    <div class="api-input-section">
+                        <h3>API 密钥设置</h3>
+                        <p>在这里输入您的 OpenAI API 密钥以启用詹老师机器人。您可以在 <a href="https://platform.openai.com/account/api-keys" target="_blank">OpenAI 平台</a> 获取您的 API 密钥。</p>
+                        <div class="api-input-group">
+                            <input type="password" id="api-key-input" placeholder="请输入您的 OpenAI API 密钥">
+                            <button id="save-api-key">保存 API 密钥</button>
+                        </div>
+                        <p class="api-status" id="api-status"></p>
+                    </div>
+
+                    <div class="chat-interface">
+                        <h3>与詹老师机器人科学家聊天</h3>
+                        <div class="chat-window" id="chat-window">
+                            <div class="message bot-message">
+                                <p>你好！我是詹老师机器人科学家，有什么科学问题可以帮助你吗？</p>
+                            </div>
+                        </div>
+                        <div class="chat-input-group">
+                            <input type="text" id="user-message-input" placeholder="输入你的问题...">
+                            <button id="send-message-button">发送</button>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
