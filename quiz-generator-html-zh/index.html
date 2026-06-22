@@ -13,8 +13,22 @@
 </head>
 <body>
   <header class="header">
-    <h1>高级测验生成器</h1>
-  </header>
+  <h1>高级测验生成器</h1>
+  <button id="themeToggle" class="btn secondary" style="margin-left:auto;">🌙 切换主题</button>
+</header>
+
+
+
+<section class="card api-tutorial" id="apiTutorial">
+  <h2>获取 API 密钥教程</h2>
+  <ol>
+    <li>访问 <a href="https://platform.openai.com/account/api-keys" target="_blank">OpenAI API Keys 页面</a></li>
+    <li>登录或创建账户。</li>
+    <li>点击 “Create new secret key”。</li>
+    <li>复制生成的密钥并粘贴到下方的 “API 密钥” 输入框。</li>
+  </ol>
+  <button id="closeTutorial" class="btn secondary">我已了解</button>
+</section>
 
   <main class="container">
     <!-- API Key 输入 -->
@@ -58,9 +72,18 @@
           </div>
         </label>
       </div>
+      <button id="generateBtn" class="btn primary">生成测验</button>
     </section>
 
-    <button id="generateBtn" class="btn primary">生成测验</button>
+    <div class="progress-container" style="margin-top:1rem;">
+      <div class="progress-bar" id="progressBar" style="width:0%; height:8px; background:#ffeb3b; border-radius:4px;"></div>
+    </div>
+    <button id="resetApiBtn" class="btn secondary" style="margin-top:1rem;">重置 API</button>
+    <section class="card" id="resultSection" style="display:none;">
+      <h2>测验结果</h2>
+      <p id="resultText"></p>
+      <button id="closeResultBtn" class="btn secondary">关闭</button>
+    </section>
 
     <!-- 测验展示区 -->
     <section class="card" id="quizSection" style="display:none;">

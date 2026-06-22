@@ -1,5 +1,5 @@
 {
-  "summary":  "Updated Chinese index.html with visible file upload area and improved layout.",
-  "updatedAt":  "2026-06-22T03:25:39.463471400Z",
+  "summary":  "Fix HTML duplicate header, correct renderQuestion HTML, update button IDs and modal handling, add close modal listener, add dark mode CSS rules.",
+  "updatedAt":  "2026-06-22T04:06:55.777222600Z",
   "userFacing":  true
 }
