@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Premium Quiz Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.min.js"></script>
+</head>
+<body>
+  <header class="header">
+    <h1>Quiz Generator</h1>
+  </header>
+  <main class="container">
+    <section class="panel" id="api-panel">
+      <h2>API Key</h2>
+      <input type="password" id="api-key" placeholder="Enter your API key" />
+      <button id="toggle-key" title="Show/Hide">👁️</button>
+    </section>
+    <section class="panel" id="upload-panel">
+      <h2>Upload Document</h2>
+      <div class="dropzone" id="dropzone">
+        <p>Drag &amp; drop PDF / DOCX / PPTX here, or click to select.</p>
+        <input type="file" id="file-input" accept=".pdf,.docx,.pptx" hidden />
+      </div>
+    </section>
+    <section class="panel" id="settings-panel">
+      <h2>Quiz Settings</h2>
+      <div class="setting">
+        <label for="time-limit">Time limit per question (seconds):</label>
+        <input type="number" id="time-limit" min="5" value="30" />
+      </div>
+      <div class="setting">
+        <label for="group-count">Number of groups:</label>
+        <input type="number" id="group-count" min="1" value="1" />
+      </div>
+      <div class="setting">
+        <label for="marks-per-q">Marks per question:</label>
+        <input type="number" id="marks-per-q" min="1" value="1" />
+      </div>
+      <div class="setting difficulty">
+        <p>Difficulty distribution (total = number of questions):</p>
+        <label>Easy: <input type="number" id="easy-count" min="0" value="3" /></label>
+        <label>Medium: <input type="number" id="medium-count" min="0" value="2" /></label>
+        <label>Hard: <input type="number" id="hard-count" min="0" value="1" /></label>
+      </div>
+    </section>
+    <button id="generate-btn" class="primary">Generate Quiz</button>
+    <section class="panel" id="quiz-panel" hidden>
+      <h2 id="quiz-title">Quiz</h2>
+      <div id="question-container"></div>
+      <div class="navigation">
+        <button id="prev-q" disabled>Previous</button>
+        <span id="timer">⏱️ <span id="time-left"></span>s</span>
+        <button id="next-q" disabled>Next</button>
+      </div>
+    </section>
+  </main>
+  <div id="explanation-modal" class="modal" hidden>
+    <div class="modal-content">
+      <span id="close-modal" class="close">&times;</span>
+      <h3>Answer Explanation</h3>
+      <p id="explanation-text"></p>
+    </div>
+  </div>
+  <audio id="explain-sound" src="assets/cute_cartoon.wav" preload="auto"></audio>
+  <script src="script.js"></script>
+</body>
+</html>

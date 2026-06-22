@@ -1,0 +1,159 @@
+/* styles.css – Premium Quiz Generator UI */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+:root {
+  --primary-h: 260; /* hue */
+  --primary-s: 80%;
+  --primary-l: 55%;
+  --bg: hsl(0, 0%, 98%);
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, hsl(var(--primary-h), var(--primary-s), 70%), hsl(calc(var(--primary-h) + 30), var(--primary-s), 65%));
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+  padding: 2rem;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, hsl(var(--primary-h), var(--primary-s), 55%), hsl(calc(var(--primary-h) + 40), var(--primary-s), 45%));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.container {
+  background: var(--glass-bg);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  width: 100%;
+  max-width: 900px;
+}
+
+section {
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+input[type="text"], input[type="password"], input[type="number"], select, textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 1rem;
+}
+
+input::placeholder, textarea::placeholder {
+  color: rgba(255,255,255,0.7);
+}
+
+button {
+  padding: 0.75rem 1.5rem;
+  background: hsl(var(--primary-h), var(--primary-s), 55%);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: hsl(var(--primary-h), var(--primary-s), 45%);
+}
+
+/* Drag & Drop area */
+.dropzone {
+  border: 2px dashed rgba(255,255,255,0.5);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255,255,255,0.8);
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.dropzone.dragover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* Quiz display */
+.question-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#timer {
+  font-size: 1.2rem;
+}
+
+/* Explanation modal */
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.6);
+  visibility: hidden;
+}
+.modal.active { visibility: visible; }
+.modal-content {
+  background: var(--glass-bg);
+  backdrop-filter: saturate(180%) blur(15px);
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 600px;
+  width: 90%;
+}
+
+.close {
+  position: absolute;
+  top: 10px; right: 15px;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  body { padding: 1rem; }
+  header h1 { font-size: 2rem; }
+}

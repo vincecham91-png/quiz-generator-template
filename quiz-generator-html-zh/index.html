@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>高级测验生成器</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Google Font -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+    rel="stylesheet"
+  />
+</head>
+<body>
+  <header class="header">
+    <h1>高级测验生成器</h1>
+  </header>
+
+  <main class="container">
+    <!-- API Key 输入 -->
+    <section class="card">
+      <h2>API 密钥</h2>
+      <input
+        type="password"
+        id="apiKey"
+        placeholder="在此粘贴您的 OpenAI API Key"
+        class="input"
+      />
+    </section>
+
+    <!-- 文件上传区域 -->
+    <section class="card" id="uploadSection">
+      <h2>上传文档 (PDF/DOCX/PPTX)</h2>
+      <div class="upload-area" id="uploadArea">
+        <p>将文件拖拽至此或点击选择文件</p>
+        <input type="file" id="fileInput" accept=".pdf,.docx,.pptx" hidden />
+      </div>
+    </section>
+
+    <!-- 设定面板 -->
+    <section class="card">
+      <h2>测验设置</h2>
+      <div class="settings-grid">
+        <label>每题时间（秒）
+          <input type="number" id="timeLimit" value="30" min="5" class="input" />
+        </label>
+        <label>分组数量
+          <input type="number" id="groupCount" value="1" min="1" class="input" />
+        </label>
+        <label>每题分数
+          <input type="number" id="marksPer" value="1" min="1" class="input" />
+        </label>
+        <label>难度比例（%）
+          <div class="difficulty-sliders">
+            <label>简单 <input type="range" id="easyPct" min="0" max="100" value="40" /></label>
+            <label>中等 <input type="range" id="mediumPct" min="0" max="100" value="40" /></label>
+            <label>困难 <input type="range" id="hardPct" min="0" max="100" value="20" /></label>
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <button id="generateBtn" class="btn primary">生成测验</button>
+
+    <!-- 测验展示区 -->
+    <section class="card" id="quizSection" style="display:none;">
+      <h2>测验预览</h2>
+      <div id="questionContainer"></div>
+      <div class="nav-buttons">
+        <button id="prevBtn" class="btn">上一题</button>
+        <button id="nextBtn" class="btn">下一题</button>
+        <button id="showAnswerBtn" class="btn secondary">查看说明</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- 说明弹窗 -->
+  <div id="explanationModal" class="modal">
+    <div class="modal-content">
+      <span class="close" id="closeModal">&times;</span>
+      <p id="explanationText"></p>
+      <audio id="explainAudio" src="assets/cute_cartoon.wav"></audio>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
